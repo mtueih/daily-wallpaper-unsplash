@@ -1,12 +1,18 @@
 {
-  "$schema": "./node_modules/wrangler/config-schema.json",
-  "name": "daily-wallpaper",
-  "main": "src/index.js",
-  "compatibility_date": "2026-07-07",
-  "observability": {
-    "logs": {
-      "enabled": true,
-      "invocation_logs": true
-    }
-  }
+	"$schema": "./node_modules/wrangler/config-schema.json",
+	"name": "daily-wallpaper",
+	"main": "src/index.js",
+	"compatibility_date": "2026-07-07",
+	"observability": {
+		"logs": {
+			"enabled": true,
+			"invocation_logs": true
+		}
+	},
+	"kv_namespaces": [
+		{
+			"binding": "KV_CACHE",
+			"id": "a6b27918e573409abb129c9db3ce21ee"
+		}
+	]
 }

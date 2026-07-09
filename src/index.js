@@ -10,16 +10,20 @@ import {getRandom} from "./unsplash.js";
 
 export default {
   async fetch(request, env, ctx) {
-    const urlParseRet = await requestUrlParser(request.url);
+    // const urlParseRet = await requestUrlParser(request.url);
+    //
+    // if (!urlParseRet) {
+    //   return new Response("Invalid URL", {status: 400});
+    // }
 
-    console.log(urlParseRet);
+    // console.log(urlParseRet);
 
     // const ret = await getRandom(env.UNSPLASH_API_KEY);
-
+    //
     // console.log(ret);
-
+    //
     // const retJson = await ret.json();
-
+    //
     // console.log(retJson);
 
     return new Response("Hello, world!");
