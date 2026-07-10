@@ -36,10 +36,10 @@ export default {
 		const cacheKey = await generateCacheKey(requestParamString);
 
 		/* 查缓存。 */
-		let imageInfo = await getImageInfoFromCache(env.KV_CACHE, cacheKey);
+		const imageInfoCached = await getImageInfoFromCache(env.KV_CACHE, cacheKey);
 		/* 命中缓存。 */
-		if (imageInfo) {
-			return Response.redirect(generateCompleteImageUrl(imageInfo, paramInfo));
+		if (imageInfoCached) {
+			return Response.redirect(generateCompleteImageUrl(imageInfoCached, paramInfo));
 		}
 
 		/* 未命中缓存。 */
@@ -53,20 +53,24 @@ export default {
 
 		/* 未超额。 */
 		/* 请求。 */
-		imageInfo = getImageInfoByRequest(requestParamString, env.UNSPLASH_API_KEY);
+		const imageInfoNew = await getImageInfoByRequest(requestParamString, env.UNSPLASH_API_KEY);
 
 		/* 无论请求是否成功，都更新限额（异步执行）。 */
-		setLimitToCache(env.KV_CACHE, limit - 1);
+		ctx.waitUntil(
+			setLimitToCache(env.KV_CACHE, limit - 1),
+		);
 
-		if (!imageInfo) {
+		if (!imageInfoNew) {
 			return new Response("500 Internal Server Error", {status: 500});
 		}
 
 		/* 请求成功。 */
 		/* 先写入缓存（异步执行）。 */
-		setImageInfoFromCache(env.KV_CACHE, cacheKey, imageInfo, env.TIME_ZONE);
+		ctx.waitUntil(
+			setImageInfoFromCache(env.KV_CACHE, cacheKey, imageInfoNew, env.TIME_ZONE),
+		);
 
 		/* 返回重定向响应。 */
-		return Response.redirect(generateCompleteImageUrl(imageInfo, paramInfo));
+		return Response.redirect(generateCompleteImageUrl(imageInfoNew, paramInfo));
 	},
 };

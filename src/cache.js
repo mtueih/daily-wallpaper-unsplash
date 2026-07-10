@@ -9,7 +9,7 @@ import {Constants} from "./constants.js";
 import {
 	getNextHourUnix,
 	getNextMidnightUnix,
-} from "./time";
+} from "./time.js";
 
 
 async function generateStringSHA256(str) {
@@ -46,15 +46,15 @@ export async function getLimitFromCache(cacheKV) {
 	return limit ? Number(limit) : Constants.Unsplash.RATE_LIMIT_PER_HOUR;
 }
 
-export function setLimitToCache(cacheKV, limit) {
-	cacheKV.set(Constants.Cache.LIMIT_CACHE_KEY, limit, {
+export async function setLimitToCache(cacheKV, limit) {
+	await cacheKV.put(Constants.Cache.LIMIT_CACHE_KEY, limit, {
 		/* 绝对过期时间。设为下一个 UTC 整点小时时过期。 */
 		expiration: getNextHourUnix(),
 	});
 }
 
-export function setImageInfoFromCache(cacheKV, cacheKey, imageInfo, timeZone) {
-	cacheKV.set(cacheKey, [
+export async function setImageInfoFromCache(cacheKV, cacheKey, imageInfo, timeZone) {
+	await cacheKV.put(cacheKey, [
 		imageInfo.id,
 		imageInfo.ixid,
 		imageInfo.ixlib,

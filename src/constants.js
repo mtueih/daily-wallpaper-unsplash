@@ -11,32 +11,32 @@ export const Constants = {
 		RATE_LIMIT_PER_HOUR: 50,
 		IMAGE_URL_PREFIX: "https://images.unsplash.com/photo-",
 		IMGIX_PRESETS: {
-			thumb: [
+			thumb: new Map([
 				["cs", "tinysrgb"],
 				["fit", "max"],
 				["fm", "jpg"],
 				["q", "80"],
 				["w", "200"],
-			],
-			small: [
+			]),
+			small: new Map([
 				["cs", "tinysrgb"],
 				["fit", "max"],
 				["fm", "jpg"],
 				["q", "80"],
 				["w", "400"],
-			],
-			regular: [
+			]),
+			regular: new Map([
 				["cs", "tinysrgb"],
 				["fit", "max"],
 				["fm", "jpg"],
 				["q", "80"],
 				["w", "1080"],
-			],
-			full: [
+			]),
+			full: new Map([
 				["cs", "srgb"],
 				["fm", "jpg"],
 				["q", "85"],
-			],
+			]),
 		},
 		IMAGE_URL_PATTERN: /^https:\/\/images\.unsplash\.com\/photo-(.+)\?ixid=(.+)&ixlib=(.+)$/,
 	},

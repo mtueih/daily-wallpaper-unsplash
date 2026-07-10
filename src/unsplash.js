@@ -23,21 +23,20 @@ export function generateRequestParamString(paramInfo) {
 }
 
 export function generateCompleteImageUrl(imageInfo, paramInfo) {
+	const ImgixPresets = Constants.Unsplash.IMGIX_PRESETS;
+
 	const urlParam = new Map();
 	urlParam.set("ixid", imageInfo.ixid);
 	urlParam.set("ixlib", imageInfo.ixlib);
 
-	if (Constants.Unsplash.IMGIX_PRESETS.hasOwnProperty(paramInfo.unsplash.size)) {
-		for (const [k, v] in Constants.Unsplash.IMGIX_PRESETS[paramInfo.unsplash.size]) {
+	if (Object.hasOwn(ImgixPresets, paramInfo.unsplash.size)) {
+		for (const [k, v] of ImgixPresets[paramInfo.unsplash.size]) {
 			urlParam.set(k, v);
 		}
 	}
 
-	return `${Constants.Unsplash.IMAGE_URL_PREFIX}${imageInfo.id}?${
-		[...new Map([...paramInfo.other, ...urlParam])].map(
-			([k, v]) => `${k}=${v}`,
-		).join("&")
-	}`;
+	const mergedParams = new URLSearchParams([...paramInfo.other, ...urlParam]);
+	return `${Constants.Unsplash.IMAGE_URL_PREFIX}${imageInfo.id}?${mergedParams.toString()}`;
 }
 
 export async function getImageInfoByRequest(requestParamString, accessToken) {

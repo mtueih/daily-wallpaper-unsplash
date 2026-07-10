@@ -24,6 +24,8 @@ import {Constants} from "./constants";
  * 其余参数全部透传给最终的图片 URL。
  */
 export function requestUrlParser(requestUrlString) {
+	const ParamConfig = Constants.Router.PARAM_CONFIG;
+
 	let requestUrl;
 
 	try {
@@ -42,9 +44,9 @@ export function requestUrlParser(requestUrlString) {
 			topics: [],
 			collections: [],
 			/* 选项参数采用先默认值，如果指定则覆盖的策略。 */
-			orientation: Constants.Router.PARAM_CONFIG.OptionDefault.orientation,
-			content_filter: Constants.Router.PARAM_CONFIG.OptionDefault.content_filter,
-			size: Constants.Router.PARAM_CONFIG.OptionDefault.size,
+			orientation: ParamConfig.OptionDefault.orientation,
+			content_filter: ParamConfig.OptionDefault.content_filter,
+			size: ParamConfig.OptionDefault.size,
 		},
 		/* 其他参数默认使用 Map，以确保键唯一。 */
 		other: new Map(),
@@ -57,19 +59,19 @@ export function requestUrlParser(requestUrlString) {
 		}
 
 		/* 单值参数处理。 */
-		if (Constants.Router.PARAM_CONFIG.SingleValueKeys.has(key)) {
+		if (ParamConfig.SingleValueKeys.has(key)) {
 			paramInfo.unsplash[key] = value;
 		}
 		/* 多值参数处理。 */
-		else if (Constants.Router.PARAM_CONFIG.MultiValueKeys.has(key)) {
+		else if (ParamConfig.MultiValueKeys.has(key)) {
 			/* 对多值参数进行去重和排序。 */
 			paramInfo.unsplash[key] = [...new Set(
 				value.split(",").filter(Boolean),
 			)].sort();
 		}
 		/* 选项参数处理。 */
-		else if (Constants.Router.PARAM_CONFIG.OptionKeys.has(key)) {
-			if (Constants.Router.PARAM_CONFIG.OptionAllowed[key].has(value)) {
+		else if (ParamConfig.OptionKeys.has(key)) {
+			if (ParamConfig.OptionAllowed[key].has(value)) {
 				paramInfo.unsplash[key] = value;
 			}
 		}
@@ -83,7 +85,7 @@ export function requestUrlParser(requestUrlString) {
 	if (paramInfo.unsplash.query.length === 0 && paramInfo.unsplash.username.length === 0 &&
 		paramInfo.unsplash.topics.length === 0 && paramInfo.unsplash.collections.length === 0
 	) {
-		paramInfo.unsplash.topics = Constants.Router.PARAM_CONFIG.MultiValueDefaults.topics;
+		paramInfo.unsplash.topics = ParamConfig.MultiValueDefaults.topics;
 	}
 
 	return paramInfo;
