@@ -5,17 +5,11 @@
  */
 
 
+import {Constants} from "./constants";
+
+
 /**
  * 只支持查询参数，URL 路径不做处理。
- *
- * 支持的查询参数：
- * - collections
- * - topics
- * - username
- * - query 默认 landscape
- * - orientation landscape/portrait/squarish 默认 landscape
- * - content_filter low/high 默认 high
- * - size raw/full/regular/small/thumb 默认 regular
  *
  * 将据此建立缓存。不同的参数应当分别单独建立缓存。
  * 相同的参数同一天内，应该请求到相同的图片。
@@ -29,91 +23,68 @@
  *
  * 其余参数全部透传给最终的图片 URL。
  */
-export async function requestUrlParser(requestUrl) {
-  const CONFIG = {
-    SingleValueKeys: new Set(["username", "query"]),
-    SingleValueDefault: {
-      query: "landscape",
-    },
+export function requestUrlParser(requestUrlString) {
+	let requestUrl;
 
-    MultiValueKeys: new Set(["collections", "topics"]),
-    MultiValueDefaults: {},
+	try {
+		requestUrl = new URL(requestUrlString);
+	} catch {
+		return null;
+	}
 
-    OptionKeys: new Set(["orientation", "content_filter", "size"]),
-    OptionAllowed: {
-      orientation: new Set(["landscape", "portrait", "squarish"]),
-      content_filter: new Set(["low", "high"]),
-      size: new Set(["raw", "full", "regular", "small", "thumb"]),
-    },
-    OptionDefault: {
-      orientation: "landscape",
-      content_filter: "high",
-      size: "regular",
-    },
-  };
+	const params = requestUrl.searchParams;
 
-  let url;
+	const paramInfo = {
+		unsplash: {
+			/* 非选项参数采用先默认空值，指定覆盖后，如果都没有覆盖过，再上默认值的策略。 */
+			query: "",
+			username: "",
+			topics: [],
+			collections: [],
+			/* 选项参数采用先默认值，如果指定则覆盖的策略。 */
+			orientation: Constants.Router.PARAM_CONFIG.OptionDefault.orientation,
+			content_filter: Constants.Router.PARAM_CONFIG.OptionDefault.content_filter,
+			size: Constants.Router.PARAM_CONFIG.OptionDefault.size,
+		},
+		/* 其他参数默认使用 Map，以确保键唯一。 */
+		other: new Map(),
+	};
 
-  try {
-    url = new URL(requestUrl);
-  } catch {
-    return null;
-  }
+	for (const [key, value] of params) {
+		/* 忽略为空字符串的键和值。 */
+		if (value.trim().length === 0 || key.trim().length === 0) {
+			continue;
+		}
 
-  const params = url.searchParams;
+		/* 单值参数处理。 */
+		if (Constants.Router.PARAM_CONFIG.SingleValueKeys.has(key)) {
+			paramInfo.unsplash[key] = value;
+		}
+		/* 多值参数处理。 */
+		else if (Constants.Router.PARAM_CONFIG.MultiValueKeys.has(key)) {
+			/* 对多值参数进行去重和排序。 */
+			paramInfo.unsplash[key] = [...new Set(
+				value.split(",").filter(Boolean),
+			)].sort();
+		}
+		/* 选项参数处理。 */
+		else if (Constants.Router.PARAM_CONFIG.OptionKeys.has(key)) {
+			if (Constants.Router.PARAM_CONFIG.OptionAllowed[key].has(value)) {
+				paramInfo.unsplash[key] = value;
+			}
+		}
+		/* 其他参数处理。 */
+		else {
+			paramInfo.other.set(key, value);
+		}
+	}
 
-  const result = {
-    unsplash: {
-      /* 非选项参数采用先默认空值，指定覆盖后，如果都没有覆盖过，再上默认值的策略。 */
-      query: "",
-      username: "",
-      /* 将多值参数初始化为 Set 类型以确保值唯一。 */
-      topics: [],
-      collections: [],
-      /* 选项参数采用先默认值，如果指定则覆盖的策略。 */
-      orientation: CONFIG.OptionDefault.orientation,
-      content_filter: CONFIG.OptionDefault.content_filter,
-      size: CONFIG.OptionDefault.size,
-    },
-    /* 其他参数默认使用 Map，以确保键唯一。 */
-    other: new Map(),
-  };
+	/* 处理非选项参数默认值。如果都没有被指定过，才采用默认值。 */
+	if (paramInfo.unsplash.query.length === 0 && paramInfo.unsplash.username.length === 0 &&
+		paramInfo.unsplash.topics.length === 0 && paramInfo.unsplash.collections.length === 0
+	) {
+		paramInfo.unsplash.topics = Constants.Router.PARAM_CONFIG.MultiValueDefaults.topics;
+	}
 
-  for (const [key, value] of params) {
-    /* 忽略为空字符串的键和值。 */
-    if (value.trim().length === 0 || key.trim().length === 0) {
-      continue;
-    }
-
-    /* 单值参数处理。 */
-    if (CONFIG.SingleValueKeys.has(key)) {
-      result.unsplash[key] = value;
-    }
-    /* 多值参数处理。 */
-    else if (CONFIG.MultiValueKeys.has(key)) {
-      result.unsplash[key] = [...new Set(
-        value.split(",").filter(Boolean),
-      )].sort();
-    }
-    /* 选项参数处理。 */
-    else if (CONFIG.OptionKeys.has(key)) {
-      /* 对多值参数进行去重和排序。 */
-      if (CONFIG.OptionAllowed[key].has(value)) {
-        result.unsplash[key] = value;
-      }
-    }
-    /* 其他参数处理。 */
-    else {
-      result.other.set(key, value);
-    }
-  }
-
-  /* 处理非选项参数默认值。如果都没有被指定过，才采用默认值。 */
-  if (result.unsplash.query.length === 0 && result.unsplash.username.length === 0 &&
-    result.unsplash.topics.length === 0 && result.unsplash.collections.length === 0
-  ) {
-    result.unsplash.query = CONFIG.SingleValueDefault.query;
-  }
-
-  return result;
+	return paramInfo;
 }

@@ -1,13 +1,15 @@
 {
-  "name": "daily-wallpaper",
-  "version": "0.0.0",
-  "private": true,
-  "type": "module",
-  "scripts": {
-    "dev": "wrangler dev",
-    "deploy": "wrangler deploy"
-  },
-  "devDependencies": {
-    "wrangler": "^4.107.0"
-  }
+	"name": "daily-wallpaper",
+	"version": "0.0.0",
+	"private": true,
+	"scripts": {
+		"dev": "wrangler dev",
+		"deploy": "wrangler deploy"
+	},
+	"devDependencies": {
+		"wrangler": "^4.107.0"
+	},
+	"dependencies": {
+		"date-fns-tz": "^3.2.0"
+	}
 }
