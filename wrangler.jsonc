@@ -10,6 +10,6 @@
 		}
 	],
 	"vars": {
-		"TIME_ZONE": "Asia/Shanghai"
+		"TIME_ZONE_OFFSET_SEC": "28800"
 	}
 }

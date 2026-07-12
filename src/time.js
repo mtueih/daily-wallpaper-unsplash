@@ -5,23 +5,18 @@
  */
 
 
-import {
-	toZonedTime,
-	fromZonedTime,
-} from "date-fns-tz";
-
 export function getNextHourUnix() {
 	const now = Math.floor(Date.now() / 1000);
 	return now - now % 3600 + 3600;
 }
 
-export function getNextMidnightUnix(timeZone) {
-	const zoned = toZonedTime(new Date(), timeZone);
+export function getNextMidnightUnix(timeZoneOffset) {
+	const nowSeconds  = Math.floor(Date.now() / 1000);
 
-	zoned.setDate(zoned.getDate() + 1);
-	zoned.setHours(0, 0, 0, 0);
+	const timeZoneOffsetSeconds = Number(timeZoneOffset) || 0;
 
-	const utc = fromZonedTime(zoned, timeZone);
+	const localNow  = nowSeconds + timeZoneOffsetSeconds;
+	const nextLocalMidnight = localNow - (localNow % 86400) + 86400;
 
-	return Math.floor(utc.getTime() / 1000);
+	return nextLocalMidnight - timeZoneOffsetSeconds;
 }
